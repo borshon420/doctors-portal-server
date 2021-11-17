@@ -88,11 +88,27 @@ async function run(){
           res.json(result);
         });
 
-        app.post('/doctors', async(req, res)=>{
-          console.log('body', req.body);
-          console.log('files', req.files);
-          res.json({success: true})
+        app.get('/doctors', async(req, res)=>{
+          const cursor = doctorsCollection.find({});
+          const doctors = await cursor.toArray();
+          res.json(doctors);
         })
+
+        app.post('/doctors', async(req, res)=>{
+          const name = req.body.name;
+          const email = req.body.email;
+          const pic = req.files.image;
+          const picData = pic.data;
+          const encodedPic = picData.toString('base64');
+          const imageBuffer = Buffer.from(encodedPic, 'base64');
+          const doctor = {
+            name,
+            email,
+            image: imageBuffer
+          }
+          const result = await doctorsCollection.insertOne(doctor);
+          res.json(result)
+        });
 
         app.get('/users/:email', async(req, res)=> {
           const email = req.params.email;
